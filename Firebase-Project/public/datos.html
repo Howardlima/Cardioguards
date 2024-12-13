@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datos del Usuario</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <ul class="nav-links">
+                <li><a href="#">Índice Cardiovascular</a></li>
+                <li><a href="#">Contáctanos</a></li>
+                <li><a href="#" id="logout">Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="user-data" class="form-section">
+            <h2>Información del Usuario</h2>
+            <p>Nombre: <span id="nombre-usuario">--</span></p>
+        </section>
+
+        <section id="sensor-data" class="form-section">
+            <h2>Datos del Sensor</h2>
+            <p>Ritmo Cardíaco: <span id="ritmo-cardiaco">--</span> bpm</p>
+            <p>Saturación de Oxígeno: <span id="saturacion-oxigeno">--</span>%</p>
+        </section>
+
+        <section id="recomendaciones" class="form-section">
+            <h2>Recomendaciones</h2>
+            <!-- Las recomendaciones se generarán dinámicamente -->
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 CARDIOGUARDS - VITANOVA</p>
+    </footer>
+
+    <script>
+        var firebaseConfig = {
+            apiKey: "AIzaSyAqtRhedddscubK3waKtpbtN5QfJd4aRH8",
+            authDomain: "esp32-firebase-cardio.firebaseapp.com",
+            databaseURL: "https://esp32-firebase-cardio-default-rtdb.firebaseio.com",
+            projectId: "esp32-firebase-cardio",
+            storageBucket: "esp32-firebase-cardio.firebasestorage.app",
+            messagingSenderId: "2488106683",
+            appId: "1:2488106683:web:d6a851931d93dd2bafb39e"
+        };
+    
+        firebase.initializeApp(firebaseConfig);
+        var database = firebase.database();
+    
+        // Cargar datos del usuario
+        database.ref('usuarios/usuario1').once('value').then(snapshot => {
+            const datos = snapshot.val();
+            document.getElementById('nombre-usuario').textContent = datos.nombre || '--';
+        });
+    
+        // Escuchar datos del sensor
+        database.ref('signos_vitales').on('value', snapshot => {
+            const datos = snapshot.val();
+            const frecuencia_cardiaca = datos?.frecuencia_cardiaca || '--';
+            const oxigeno = datos?.oxigeno || '--';
+    
+            document.getElementById('ritmo-cardiaco').textContent = frecuencia_cardiaca;
+            document.getElementById('saturacion-oxigeno').textContent = oxigeno;
+    
+            // Generar recomendaciones
+            generarRecomendaciones(frecuencia_cardiaca, oxigeno);
+        });
+    
+        // Generar recomendaciones dinámicas
+        function generarRecomendaciones(ritmo, oxigeno) {
+            const recomendaciones = document.getElementById('recomendaciones');
+            recomendaciones.innerHTML = ''; // Limpiar recomendaciones previas
+    
+            if (ritmo !== '--' && oxigeno !== '--') {
+                ritmo = parseInt(ritmo);
+                oxigeno = parseInt(oxigeno);
+    
+                if (ritmo < 60) {
+                    recomendaciones.innerHTML += `<p>Su ritmo cardíaco es bajo. Se recomienda consultar a un médico si persiste.</p>`;
+                } else if (ritmo > 100) {
+                    recomendaciones.innerHTML += `<p>Su ritmo cardíaco es elevado. Relájese y descanse, o consulte a un médico si persiste.</p>`;
+                } else {
+                    recomendaciones.innerHTML += `<p>Su ritmo cardíaco está dentro del rango normal.</p>`;
+                }
+    
+                if (oxigeno < 90) {
+                    recomendaciones.innerHTML += `<p>La saturación de oxígeno es baja. Considere buscar atención médica.</p>`;
+                } else {
+                    recomendaciones.innerHTML += `<p>La saturación de oxígeno es adecuada.</p>`;
+                }
+            } else {
+                recomendaciones.innerHTML = `<p>Esperando datos del sensor...</p>`;
+            }
+        }
+    
+        // Cerrar sesión
+        document.getElementById('logout').addEventListener('click', () => {
+            window.location.href = "index.html";
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+/* Reset y estilos base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    background-color: #f4f7f6;
+    color: #333;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header Title and Logo */
+.header-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    gap: 8px;
+}
+
+.header-title .logo {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.header-title h1 {
+    margin: 0;
+    font-size: 1.5em;
+    color: #2c3e50;
+}
+
+/* Barra superior */
+.navbar {
+    background-color: #34495e;
+    color: #ecf0f1;
+    padding: 15px 20px;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+}
+
+.nav-links li {
+    display: inline;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #ecf0f1;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: #1abc9c;
+}
+
+/* Sección de Información Personal y Datos */
+.form-section {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-section h2 {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    font-size: 1.2em;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #34495e;
+    font-weight: 600;
+}
+
+/* Inputs y Selects */
+input[type="number"],
+input[type="text"],
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    background-color: #f8f9fa;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus,
+select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+}
+
+/* Botón de Guardar */
+#guardar-info {
+    width: 100%;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+#guardar-info:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+}
+
+/* Sección de Datos del Usuario */
+#user-data p, 
+#sensor-data p {
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #ecf0f1;
+    padding-bottom: 5px;
+}
+
+#user-data p span:last-child,
+#sensor-data p span:last-child {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+/* Datos del Sensor */
+#sensor-data h2 {
+    border-bottom-color: #2ecc71;
+}
+
+#sensor-data p span:last-child {
+    color: #2ecc71;
+}
+
+/* Logout Link */
+#logout {
+    color: #e74c3c;
+    transition: color 0.3s ease;
+}
+
+#logout:hover {
+    color: #c0392b;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 15px;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    border-radius: 0 0 8px 8px;
+    margin-top: 20px;
+}
+
+/* Responsividad */
+@media screen and (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    .header-title {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .header-title .logo {
+        width: 15px;
+        height: 15px;
+        margin-bottom: 10px;
+    }
+
+    .header-title h1 {
+        font-size: 1.3em;
+    }
+
+    .navbar {
+        flex-direction: column;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .nav-links li {
+        margin-bottom: 10px;
+    }
+
+    .form-section,
+    section:nth-child(2) {
+        padding: 15px;
+    }
+
+    input[type="number"],
+    input[type="text"],
+    select {
+        font-size: 16px; /* Prevent zoom on mobile */
+    }
+}
+
+/* Animaciones sutiles */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+body {
+    animation: fadeIn 0.5s ease-in;
+}
+

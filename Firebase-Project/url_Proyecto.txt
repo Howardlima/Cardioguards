@@ -1,0 +1,23 @@
+https://esp32-firebase-cardio-default-rtdb.firebaseio.com/
+
+API: AIzaSyAqtRhedddscubK3waKtpbtN5QfJd4aRH8
+
+Web App Firebase:
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAqtRhedddscubK3waKtpbtN5QfJd4aRH8",
+  authDomain: "esp32-firebase-cardio.firebaseapp.com",
+  databaseURL: "https://esp32-firebase-cardio-default-rtdb.firebaseio.com",
+  projectId: "esp32-firebase-cardio",
+  storageBucket: "esp32-firebase-cardio.firebasestorage.app",
+  messagingSenderId: "2488106683",
+  appId: "1:2488106683:web:d6a851931d93dd2bafb39e"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
