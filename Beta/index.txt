@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoreo Cardíaco Personalizado</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <!-- Archivo CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-title">
+            <img src="logo_cardiog.jpeg" alt="Logo Monitoreo Cardíaco" class="logo">
+            <h1>Monitoreo Cardíaco Personalizado</h1>
+        </div>
+    </header>
+
+    <main>
+        <!-- Sección de Información Personal -->
+        <section class="form-section" id="user-info-section">
+            <h2>Información Personal</h2>
+
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="peso">Peso (kg):</label>
+                <input type="number" id="peso" name="peso" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="edad">Edad (años):</label>
+                <input type="number" id="edad" name="edad" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="sexo">Sexo:</label>
+                <select id="sexo" name="sexo" required>
+                    <option value="" class="transparent-option">Seleccionar</option>
+                    <option value="masculino">Masculino</option>
+                    <option value="femenino">Femenino</option>
+                    <option value="otro">Otro</option>
+                </select>
+            </div>
+
+            <h2>Condiciones de Salud</h2>
+            
+            <div class="form-group">
+                <label for="diabetes">Diabetes:</label>
+                <select id="diabetes" name="diabetes" required>
+                    <option value="" class="transparent-option">Seleccionar</option>
+                    <option value="si">Sí</option>
+                    <option value="no">No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="hipertension">Hipertensión:</label>
+                <select id="hipertension" name="hipertension" required>
+                    <option value="" class="transparent-option">Seleccionar</option>
+                    <option value="si">Sí</option>
+                    <option value="no">No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="hipotension">Hipotensión:</label>
+                <select id="hipotension" name="hipotension" required>
+                    <option value="" class="transparent-option">Seleccionar</option>
+                    <option value="si">Sí</option>
+                    <option value="no">No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="obesidad">Obesidad:</label>
+                <select id="obesidad" name="obesidad" required>
+                    <option value="" class="transparent-option">Seleccionar</option>
+                    <option value="si">Sí</option>
+                    <option value="no">No</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="antecedentes">Antecedentes Familiares de Enfermedades Cardíacas:</label>
+                <select id="antecedentes" name="antecedentes" required>
+                    <option value="" class="transparent-option">Seleccionar</option>
+                    <option value="si">Sí</option>
+                    <option value="no">No</option>
+                </select>
+            </div>
+
+            <button id="guardar-info">Guardar Información</button>
+        </section>
+    </main>
+
+    <script>
+        // Firebase Configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyAqtRhedddscubK3waKtpbtN5QfJd4aRH8",
+            authDomain: "esp32-firebase-cardio.firebaseapp.com",
+            databaseURL: "https://esp32-firebase-cardio-default-rtdb.firebaseio.com",
+            projectId: "esp32-firebase-cardio",
+            storageBucket: "esp32-firebase-cardio.firebasestorage.app",
+            messagingSenderId: "2488106683",
+            appId: "1:2488106683:web:d6a851931d93dd2bafb39e"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        var database = firebase.database();
+
+        // Guardar información y redirigir a datos.html
+        document.getElementById('guardar-info').addEventListener('click', function() {
+            const userData = {
+                nombre: document.getElementById('nombre').value,
+                peso: document.getElementById('peso').value,
+                edad: document.getElementById('edad').value,
+                sexo: document.getElementById('sexo').value,
+                diabetes: document.getElementById('diabetes').value,
+                hipertension: document.getElementById('hipertension').value,
+                hipotension: document.getElementById('hipotension').value,
+                obesidad: document.getElementById('obesidad').value,
+                antecedentes: document.getElementById('antecedentes').value
+            };
+
+            // Validar que todos los campos estén llenos
+            const allFieldsFilled = Object.values(userData).every(value => value !== '');
+
+            if (allFieldsFilled) {
+                database.ref('usuarios/usuario1').set(userData)
+                    .then(() => {
+                        alert('Información guardada. Redirigiendo a la página de datos.');
+                        window.location.href = "datos.html";
+                    })
+                    .catch(error => {
+                        console.error('Error al guardar datos:', error);
+                        alert('Hubo un error al guardar la información.');
+                    });
+            } else {
+                alert('Por favor, complete todos los campos.');
+            }
+        });
+    </script>
+
+    <footer>
+        <p>&copy; 2024 CARDIOGUARDS - VITANOVA</p>
+    </footer>
+</body>
+</html>

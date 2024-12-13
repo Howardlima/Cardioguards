@@ -1,0 +1,185 @@
+#include <Arduino.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <WiFi.h>
+#include <Firebase_ESP_Client.h>
+#include "addons/TokenHelper.h"
+#include "addons/RTDBHelper.h"
+#include "MAX30105.h"
+#include "spo2_algorithm.h"
+
+// Configuraciones de Firebase
+#define WIFI_SSID "NETLIFE-LIMA"
+#define WIFI_PASSWORD "0932144009"
+#define API_KEY "AIzaSyAqtRhedddscubK3waKtpbtN5QfJd4aRH8"
+#define DATABASE_URL "https://esp32-firebase-cardio-default-rtdb.firebaseio.com/"
+
+// Configuración de la pantalla LCD
+#define COLUMNS 16
+#define ROWS 2
+#define PAGE ((COLUMNS) * (ROWS))
+LiquidCrystal_I2C lcd(PCF8574_ADDR_A21_A11_A01, 4, 5, 6, 16, 11, 12, 13, 14, POSITIVE);
+
+// Configuración de Pines I2C
+#define SDA_PIN 19
+#define SCL_PIN 18
+
+// Objetos globales
+MAX30105 particleSensor;
+FirebaseData fbdo;
+FirebaseAuth auth;
+FirebaseConfig config;
+
+// Variables globales para lecturas
+int32_t spo2 = 0;
+int8_t validSPO2 = 0;
+int32_t heartRate = 0;
+int8_t validHeartRate = 0;
+uint32_t irBuffer[100];
+uint32_t redBuffer[100];
+int bufferLength = 100;  // Variable global agregada
+
+// Prototipos de tareas
+void TaskSensorReadings(void* pvParameters);
+void TaskLCDDisplay(void* pvParameters);
+void TaskFirebaseUpload(void* pvParameters);
+void TaskWiFiConnect(void* pvParameters);
+
+void setup() {
+    // Inicialización de hardware
+    Serial.begin(115200);
+    Wire.begin(SDA_PIN, SCL_PIN);
+
+    // Inicializar LCD
+    while (lcd.begin(COLUMNS, ROWS) != 1) {
+        Serial.println(F("Error: LCD no conectada o configuración incorrecta."));
+        delay(5000);
+    }
+    lcd.backlight();
+    lcd.clear();
+    lcd.print("Inicializando...");
+
+    // Inicialización del sensor MAX30102
+    if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) {
+        lcd.clear();
+        lcd.print("Sensor Error");
+        while(1); // Detener si no se encuentra el sensor
+    }
+
+    // Configuración del sensor
+    particleSensor.setup(
+        60,     // LED brightness
+        4,      // Sample average
+        2,      // LED mode
+        100,    // Sample rate
+        411,    // Pulse width
+        4096    // ADC Range
+    );
+
+    // Crear tareas de FreeRTOS
+    xTaskCreate(TaskWiFiConnect, "WiFi Connect", 4096, NULL, 3, NULL);
+    xTaskCreate(TaskSensorReadings, "Sensor Readings", 4096, NULL, 2, NULL);
+    xTaskCreate(TaskLCDDisplay, "LCD Display", 2048, NULL, 1, NULL);
+    xTaskCreate(TaskFirebaseUpload, "Firebase Upload", 4096, NULL, 2, NULL);
+}
+
+void loop() {
+    // El loop queda vacío; todo está manejado por las tareas
+    vTaskDelete(NULL);
+}
+
+void TaskWiFiConnect(void* pvParameters) {
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    
+    while (WiFi.status() != WL_CONNECTED) {
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+        Serial.print(".");
+    }
+
+    // Configuración de Firebase
+    config.api_key = API_KEY;
+    config.database_url = DATABASE_URL;
+
+    Firebase.begin(&config, &auth);
+    Firebase.reconnectWiFi(true);
+
+    for(;;) {
+        vTaskDelay(10000 / portTICK_PERIOD_MS); // Verificar conexión cada 10 segundos
+    }
+}
+
+void TaskSensorReadings(void* pvParameters) {
+    for(;;) {
+        // Leer muestras del sensor
+        for (byte i = 0; i < bufferLength; i++) {
+            while (particleSensor.available() == false) {
+                particleSensor.check();
+            }
+            redBuffer[i] = particleSensor.getRed();
+            irBuffer[i] = particleSensor.getIR();
+            particleSensor.nextSample();
+        }
+
+        // Calcular SpO2 y frecuencia cardíaca
+        maxim_heart_rate_and_oxygen_saturation(
+            irBuffer, bufferLength, redBuffer, 
+            &spo2, &validSPO2, 
+            &heartRate, &validHeartRate
+        );
+
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+}
+
+void TaskLCDDisplay(void* pvParameters) {
+    for(;;) {
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        
+        // Mostrar frecuencia cardíaca
+        lcd.print("HR:");
+        if (validHeartRate) {
+            lcd.print(heartRate);
+            lcd.print(" bpm");
+        } else {
+            lcd.print("---");
+        }
+
+        lcd.setCursor(0, 1);
+        
+        // Mostrar SpO2
+        lcd.print("SpO2:");
+        if (validSPO2) {
+            lcd.print(spo2);
+            lcd.print("%");
+        } else {
+            lcd.print("---");
+        }
+
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+}
+
+void TaskFirebaseUpload(void* pvParameters) {
+    unsigned long sendDataPrevMillis = 0;
+
+    for(;;) {
+        if (Firebase.ready() && 
+            (millis() - sendDataPrevMillis > 15000 || sendDataPrevMillis == 0)) {
+            
+            sendDataPrevMillis = millis();
+
+            // Subir datos de frecuencia cardíaca
+            if (validHeartRate) {
+                Firebase.RTDB.setFloat(&fbdo, "signos_vitales/frecuencia_cardiaca", heartRate);
+            }
+
+            // Subir datos de oxígeno
+            if (validSPO2) {
+                Firebase.RTDB.setFloat(&fbdo, "signos_vitales/oxigeno", spo2);
+            }
+        }
+
+        vTaskDelay(15000 / portTICK_PERIOD_MS);
+    }
+}
